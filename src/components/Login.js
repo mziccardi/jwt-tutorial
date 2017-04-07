@@ -9,6 +9,7 @@ export class Login extends React.Component {
       username: '',
       password: ''
     }
+    this.login = this.login.bind(this);
   }
 
   updateProperty(event) {
@@ -16,6 +17,37 @@ export class Login extends React.Component {
     this.setState({
       [name]: value
     })
+  }
+
+  login(e) {
+    const { updateAuthStatus } = this.props;
+
+    fetch('http://localhost:3001/authenticate', {
+      method: 'POST',
+      body: JSON.stringify(this.state),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw Error(response.statusText);
+      }
+
+      return response.json();
+    })
+    .then(({ username, token }) => {
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', username);
+      updateAuthStatus({
+        loggedIn: true,
+        username,
+        token
+      }, 'admin');
+    })
+    .catch(error => {
+      console.log('Error: ', error);
+    });
   }
 
   render() {
@@ -40,7 +72,9 @@ export class Login extends React.Component {
           />
         </label>
         <label>
-        <button id="submit">Login
+        <button id="submit"
+                onClick={e => this.login(e)}>
+          Login
         </button>
         </label>
       </div>
@@ -49,4 +83,3 @@ export class Login extends React.Component {
 };
 
 export default Login;
-
